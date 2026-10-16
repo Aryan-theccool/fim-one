@@ -36,6 +36,12 @@ industry-standard technical terms, or code identifiers.
 - KingbaseES, HighGo, DM8 (Xinchuang database names — their Chinese brand names
   may appear in parentheses but the English identifier stays)
 
+### Company legal names
+- FIM Labs Pte. Ltd.: keep verbatim in every locale.
+- Beijing FIM Network Technology Co., Ltd.: in zh write exactly
+  `北京飞沐网络科技有限公司`; in ja/ko/de/fr keep the English name verbatim.
+  Never transliterate "FIM" into Chinese characters (e.g. 帆幂).
+
 ### Technical standards and protocols
 - API, REST, GraphQL, gRPC
 - MCP, JSON-RPC, SSE, WebSocket, HTTP, HTTPS
