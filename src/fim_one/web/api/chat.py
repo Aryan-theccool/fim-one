@@ -722,6 +722,30 @@ def _dedupe_artifacts(artifacts: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return result
 
 
+def _collect_dag_tools_used(steps: list[PlanStep]) -> list[str]:
+    """Return the tools a DAG run actually called, in first-use order.
+
+    The executor records each react step's real tool calls in
+    ``result.data["tools_used"]``.  Checkpoints do not persist ``data``, so a
+    completed step restored from one falls back to the planner's
+    ``tool_hint``; failed and skipped steps without a record contribute
+    nothing rather than a guess.
+    """
+    tools: list[str] = []
+    for step in steps:
+        data = step.result.data if step.result is not None else None
+        if data is not None and "tools_used" in data:
+            names = list(data["tools_used"])
+        elif data is None and step.status == "completed" and step.tool_hint:
+            names = [step.tool_hint]
+        else:
+            names = []
+        for name in names:
+            if name and name not in tools:
+                tools.append(name)
+    return tools
+
+
 async def _classify_deliverables(
     fast_llm: BaseLLM,
     answer: str,
@@ -5493,21 +5517,13 @@ async def dag_endpoint(
 
             # -- Fire per-agent completion notification (if configured) ----
             # See the ReAct handler above for the full rationale.  For
-            # DAG we derive ``tools_used`` from each step's ``tool_hint``
-            # (the executor doesn't expose the actual tool chosen by the
-            # sub-agent for every step — tool_hint is the planner's
-            # best-effort approximation and is accurate in the common
-            # case of one-tool-per-step).  TODO(v0.9): replace with the
-            # real tool name once the DAG executor plumbs it through.
+            # DAG, ``tools_used`` comes from the tools each step actually
+            # called, recorded by the executor in ``result.data``.
             try:
                 from fim_one.db import create_session as _notify_create_session
                 from fim_one.web.notifications import notify_agent_completion
 
-                _dag_tools_used: list[str] = []
-                for _s in plan.steps:
-                    _hint = getattr(_s, "tool_hint", None)
-                    if _hint and _hint not in _dag_tools_used:
-                        _dag_tools_used.append(_hint)
+                _dag_tools_used = _collect_dag_tools_used(plan.steps)
 
                 _dag_agent_notify_shim = SimpleNamespace(
                     id=(agent_cfg or {}).get("agent_id"),
