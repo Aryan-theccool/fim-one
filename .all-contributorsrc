@@ -66,6 +66,18 @@
       "contributions": [
         "security"
       ]
+    },
+    {
+      "login": "Aryan-theccool",
+      "name": "Aryan singh Bhadoria",
+      "avatar_url": "https://avatars.githubusercontent.com/u/146411259?v=4",
+      "profile": "https://github.com/Aryan-theccool",
+      "contributions": [
+        "bug",
+        "doc",
+        "test",
+        "code"
+      ]
     }
   ],
   "skipCi": true
