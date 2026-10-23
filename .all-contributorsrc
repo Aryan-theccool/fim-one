@@ -21,7 +21,8 @@
       "contributions": [
         "code",
         "doc",
-        "bug"
+        "bug",
+        "test"
       ]
     },
     {
