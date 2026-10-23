@@ -10,6 +10,10 @@ Das Format folgt [Keep a Changelog](https://keepachangelog.com/). Versionen ents
 
 ## [Unveröffentlicht]
 
+### Behoben
+
+- **Abschlussbenachrichtigungen für DAG-Ausführungen listen die Tools auf, die tatsächlich ausgeführt wurden.** Die Zeile "verwendete Tools" auf einer Abschlussbenachrichtigung wurde basierend auf den vom Planer vorgeschlagenen Tools pro Schritt erstellt, sodass sie Tools benennen konnte, die nie aufgerufen wurden, und welche vermissen konnte, die tatsächlich aufgerufen wurden. Sie spiegelt nun die echten Tool-Aufrufe jedes Schritts wider.
+
 ## [v0.9.2] - 2026-10-09
 
 ### Behoben

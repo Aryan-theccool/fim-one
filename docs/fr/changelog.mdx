@@ -10,6 +10,10 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/). Les versions cor
 
 ## [Unreleased]
 
+### Corrigé
+
+- **Les notifications d'achèvement pour les listes d'exécutions DAG énumèrent les outils qui ont réellement été exécutés.** La ligne « outils utilisés » sur une carte d'achèvement était construite à partir de l'outil suggéré par le planificateur par étape, elle pouvait donc nommer des outils qui n'ont jamais été appelés et en manquer d'autres qui l'ont été ; elle reflète maintenant les appels d'outils réels de chaque étape.
+
 ## [v0.9.2] - 2026-10-09
 
 ### Corrigé
