@@ -381,6 +381,12 @@ Before submitting, ensure:
 
 By contributing, you agree that your contributions will be licensed under the [FIM One Source Available License](LICENSE). This is not an OSI-approved open source license — please review it before contributing.
 
+Before your first pull request can be merged, please sign the [Contributor License Agreement](CLA.md). The CLA bot will comment on your pull request; sign by replying with:
+
+> I have read the CLA Document and I hereby sign the CLA
+
+You keep the copyright in your contribution. The CLA lets FIM Labs distribute it as part of FIM One under the current license or under other licenses in the future, including open source and commercial licenses.
+
 ---
 
 Thank you for helping build FIM One! Bug reports, security reviews, and field test stories are just as valuable as code. Every contribution counts.
