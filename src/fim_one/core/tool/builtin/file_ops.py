@@ -219,7 +219,7 @@ class FileOpsTool(BaseTool):
         shutil.copy2(file_path, dest)
 
         try:
-            rel_path = str(dest.relative_to(self._artifacts_dir.parent.parent.parent))
+            rel_path = dest.relative_to(self._artifacts_dir.parent.parent.parent).as_posix()
         except ValueError:
             rel_path = stored_name
 
@@ -240,10 +240,9 @@ class FileOpsTool(BaseTool):
         """Resolve *raw_path* within the workspace and validate containment."""
         workspace = self._workspace_dir
         target = (workspace / raw_path).resolve()
-        if not (
-            target == workspace
-            or str(target).startswith(str(workspace) + "/")
-        ):
+        # Compare path components, not strings: a hard-coded "/" separator
+        # rejected every path on Windows.
+        if not target.is_relative_to(workspace.resolve()):
             return None
         return target
 

@@ -90,7 +90,7 @@ def scan_new_files(directory: Path, before: set[str], artifacts_dir: Path) -> li
         # Build path relative to the uploads root (3 levels up from artifacts_dir:
         # uploads / conversations / {id} / artifacts).
         try:
-            rel_path = str(dest.relative_to(artifacts_dir.parent.parent.parent))
+            rel_path = dest.relative_to(artifacts_dir.parent.parent.parent).as_posix()
         except ValueError:
             rel_path = stored_name
 
@@ -130,7 +130,7 @@ def save_content_artifact(
     size = dest.stat().st_size
 
     try:
-        rel_path = str(dest.relative_to(artifacts_dir.parent.parent.parent))
+        rel_path = dest.relative_to(artifacts_dir.parent.parent.parent).as_posix()
     except ValueError:
         rel_path = stored_name
 
