@@ -42,8 +42,10 @@ def watched_files() -> list[str]:
     """All watched paths (repo-relative, sorted, existing or not)."""
     paths = set(WATCHED_EXACT)
     for pattern in WATCHED_GLOBS:
+        # as_posix: git reports "/" paths, so "\" on Windows never matched
+        # and the guard silently passed.
         paths.update(
-            str(p.relative_to(PROJECT_ROOT))
+            p.relative_to(PROJECT_ROOT).as_posix()
             for p in PROJECT_ROOT.glob(pattern)
         )
     return sorted(paths)

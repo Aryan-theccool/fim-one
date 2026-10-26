@@ -103,6 +103,30 @@ class TestFileOpsToolSandbox:
         result = await tool.run(operation="read", path="../../etc/passwd")
         assert "Path traversal detected" in result
 
+    async def test_sibling_dir_sharing_name_prefix_blocked(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        # "ws-evil" starts with the string "ws" but is outside the workspace.
+        workspace = tmp_path / "ws"
+        (tmp_path / "ws-evil").mkdir()
+        (tmp_path / "ws-evil" / "secret.txt").write_text("secret")
+        tool = FileOpsTool(workspace_dir=workspace)
+
+        result = await tool.run(operation="read", path="../ws-evil/secret.txt")
+        assert "Path traversal detected" in result
+
+    async def test_absolute_path_outside_workspace_blocked(
+        self,
+        tmp_path: Path,
+    ) -> None:
+        outside = tmp_path / "outside.txt"
+        outside.write_text("secret")
+        tool = FileOpsTool(workspace_dir=tmp_path / "ws")
+
+        result = await tool.run(operation="read", path=str(outside))
+        assert "Path traversal detected" in result
+
     async def test_isolation_between_conversations(self, tmp_path: Path) -> None:
         ws_a = tmp_path / "conv_a" / "workspace"
         ws_b = tmp_path / "conv_b" / "workspace"

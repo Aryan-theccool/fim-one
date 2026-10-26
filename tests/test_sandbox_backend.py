@@ -145,6 +145,65 @@ class TestLocalBackendShell:
 
 
 # ---------------------------------------------------------------------------
+# TestKillProcTree
+# ---------------------------------------------------------------------------
+
+
+class TestKillProcTree:
+    """_kill_proc_tree picks the right kill path per platform."""
+
+    def test_windows_uses_proc_kill(self) -> None:
+        from fim_one.core.tool.sandbox import local_backend
+
+        proc = MagicMock(pid=1234)
+        with (
+            patch.object(local_backend.sys, "platform", "win32"),
+            patch.object(local_backend.os, "killpg", create=True) as killpg,
+        ):
+            local_backend._kill_proc_tree(proc)
+
+        killpg.assert_not_called()
+        proc.kill.assert_called_once()
+
+    def test_posix_kills_process_group(self) -> None:
+        from fim_one.core.tool.sandbox import local_backend
+
+        proc = MagicMock(pid=1234)
+        with (
+            patch.object(local_backend.sys, "platform", "linux"),
+            patch.object(local_backend.os, "killpg", create=True) as killpg,
+            patch.object(local_backend.signal, "SIGKILL", 9, create=True),
+        ):
+            local_backend._kill_proc_tree(proc)
+
+        killpg.assert_called_once_with(1234, 9)
+        proc.kill.assert_not_called()
+
+    def test_posix_falls_back_when_group_is_gone(self) -> None:
+        from fim_one.core.tool.sandbox import local_backend
+
+        proc = MagicMock(pid=1234)
+        with (
+            patch.object(local_backend.sys, "platform", "linux"),
+            patch.object(
+                local_backend.os, "killpg", create=True, side_effect=ProcessLookupError
+            ),
+            patch.object(local_backend.signal, "SIGKILL", 9, create=True),
+        ):
+            local_backend._kill_proc_tree(proc)
+
+        proc.kill.assert_called_once()
+
+    def test_already_exited_process_is_ignored(self) -> None:
+        from fim_one.core.tool.sandbox import local_backend
+
+        proc = MagicMock(pid=1234)
+        proc.kill.side_effect = ProcessLookupError
+        with patch.object(local_backend.sys, "platform", "win32"):
+            local_backend._kill_proc_tree(proc)  # must not raise
+
+
+# ---------------------------------------------------------------------------
 # TestDockerBackendErrorHandling (no Docker required)
 # ---------------------------------------------------------------------------
 

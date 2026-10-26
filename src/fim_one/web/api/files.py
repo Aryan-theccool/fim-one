@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import asyncio
-import fcntl
 import json
 import logging
 import os
+import sys
+import time
 import uuid
 from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, UploadFile
@@ -89,17 +90,45 @@ def _index_path(user_id: str) -> Path:
     return _user_dir(user_id) / "index.json"
 
 
+if sys.platform == "win32":
+    import msvcrt
+
+    def _lock_fd(fd: int) -> None:
+        # ``LK_LOCK`` gives up after ~10 s; poll ``LK_NBLCK`` instead so the
+        # call blocks until acquired, matching ``flock(LOCK_EX)``.
+        while True:
+            try:
+                msvcrt.locking(fd, msvcrt.LK_NBLCK, 1)
+                return
+            except OSError:
+                time.sleep(0.05)
+
+    def _unlock_fd(fd: int) -> None:
+        # Unlike ``flock``, unlocking a region we never locked raises.
+        with suppress(OSError):
+            msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+
+else:
+    import fcntl
+
+    def _lock_fd(fd: int) -> None:
+        fcntl.flock(fd, fcntl.LOCK_EX)
+
+    def _unlock_fd(fd: int) -> None:
+        fcntl.flock(fd, fcntl.LOCK_UN)
+
+
 @asynccontextmanager
 async def _file_lock(user_id: str) -> AsyncGenerator[None, None]:
-    """Cross-process file lock using fcntl.flock()."""
+    """Cross-process file lock (``flock`` on POSIX, ``msvcrt`` on Windows)."""
     lock_path = _user_dir(user_id) / ".lock"
     lock_path.parent.mkdir(parents=True, exist_ok=True)
     fd = open(lock_path, "w")
     try:
-        await asyncio.to_thread(fcntl.flock, fd.fileno(), fcntl.LOCK_EX)
+        await asyncio.to_thread(_lock_fd, fd.fileno())
         yield
     finally:
-        fcntl.flock(fd.fileno(), fcntl.LOCK_UN)
+        _unlock_fd(fd.fileno())
         fd.close()
 
 

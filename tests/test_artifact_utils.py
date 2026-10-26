@@ -59,6 +59,30 @@ class TestScanNewFiles:
         assert not any("tool_result_" in n for n in copied)
 
 
+class TestArtifactPathFormat:
+    """Stored paths use ``/`` so the URL builder's ``split("/")`` works on Windows."""
+
+    def test_scanned_artifact_path_is_posix(self, tmp_path: Path) -> None:
+        exec_dir = tmp_path / "workspace"
+        exec_dir.mkdir()
+        artifacts_dir = tmp_path / "uploads" / "conversations" / "c1" / "artifacts"
+        (exec_dir / "report.html").write_text("<html>hi</html>")
+
+        [artifact] = scan_new_files(exec_dir, set(), artifacts_dir)
+
+        assert "\\" not in artifact.path
+        assert artifact.path.startswith("conversations/c1/artifacts/")
+        assert artifact.path.split("/")[-1].endswith("_report.html")
+
+    def test_content_artifact_path_is_posix(self, tmp_path: Path) -> None:
+        artifacts_dir = tmp_path / "uploads" / "conversations" / "c1" / "artifacts"
+
+        artifact = save_content_artifact("<html>x</html>", "rendered.html", artifacts_dir)
+
+        assert "\\" not in artifact.path
+        assert artifact.path.startswith("conversations/c1/artifacts/")
+
+
 class TestContentHashDedup:
     def test_save_content_artifact_sets_sha(self, tmp_path: Path) -> None:
         artifact = save_content_artifact("<html>x</html>", "rendered.html", tmp_path)

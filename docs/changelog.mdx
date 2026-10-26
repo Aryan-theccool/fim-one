@@ -32,6 +32,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versions corresp
 - **With the Skills or Workflows module turned off, agents no longer see them.** The system prompt still listed skills and workflows, and told the model to call tools that were not there.
 - **Connector import no longer stores tokens in plain text, and connector URLs must be http or https on edit and import too.**
 - **The connector config template, circuit-breaker status and database schema bulk-update endpoints respond.** They returned 404 because another route captured their paths.
+- **The backend starts and runs on native Windows.** The upload index lock no longer depends on the Unix-only `fcntl` module, the file tool no longer rejects every path inside its workspace as a traversal attempt, stopping a timed-out sandbox process no longer crashes, and artifact download links no longer break on Windows file paths.
 
 ## [v0.9.2] - 2026-10-09
 

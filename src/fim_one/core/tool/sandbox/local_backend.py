@@ -226,15 +226,19 @@ def _kill_proc_tree(proc: asyncio.subprocess.Process) -> None:
 
     Requires the subprocess to have been started with
     ``start_new_session=True`` so it leads its own process group.
-    Falls back to ``proc.kill()`` if ``killpg`` fails.
+    Falls back to ``proc.kill()`` if ``killpg`` fails, and on Windows,
+    which has no process groups in the POSIX sense.
     """
-    try:
-        os.killpg(proc.pid, signal.SIGKILL)
-    except (ProcessLookupError, PermissionError, OSError):
+    if sys.platform != "win32":
         try:
-            proc.kill()
-        except ProcessLookupError:
+            os.killpg(proc.pid, signal.SIGKILL)
+            return
+        except (ProcessLookupError, PermissionError, OSError):
             pass
+    try:
+        proc.kill()
+    except ProcessLookupError:
+        pass
 
 
 # -----------------------------------------------------------------------
