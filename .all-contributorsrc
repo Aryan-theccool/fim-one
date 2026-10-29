@@ -79,6 +79,18 @@
         "test",
         "code"
       ]
+    },
+    {
+      "login": "pcbeingused333",
+      "name": "alexcastgonz",
+      "avatar_url": "https://avatars.githubusercontent.com/u/82875882?v=4",
+      "profile": "https://portfolio-alexgonzalez33.vercel.app/",
+      "contributions": [
+        "bug",
+        "doc",
+        "test",
+        "code"
+      ]
     }
   ],
   "skipCi": true
